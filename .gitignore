@@ -1,0 +1,45 @@
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE files
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment variables
+.env
+.env.*
+
+# Generated results
+results/
+output/
+outputs/
+enhanced_images/
+
+# Datasets
+datasets/
+dataset/
+data/
+
+# Model weights and checkpoints
+*.pt
+*.pth
+*.onnx
+*.ckpt
+*.h5
+
+# Temporary files
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
