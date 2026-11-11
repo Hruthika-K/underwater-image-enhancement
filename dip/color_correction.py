@@ -82,3 +82,12 @@ def correct(img, method="gray_world", **kwargs):  # one entry point: correct(img
     if method not in METHODS:              # guard against typos in the method name
         raise ValueError(f"Unknown method '{method}'. Choose from {list(METHODS)}")  # tell the user valid options
     return METHODS[method](img, **kwargs)  # call the chosen function, passing any extra settings through
+
+def vibrance(img, amount=0.6):
+    """Boost saturation more on dull pixels than on already-vivid ones."""
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV).astype(np.float32)
+    s = hsv[..., 1] / 255.0
+    hsv[..., 1] = np.clip(s * (1.0 + amount * (1.0 - s)), 0.0, 1.0) * 255.0
+    return cv2.cvtColor(hsv.astype(np.uint8), cv2.COLOR_HSV2BGR)
+
+METHODS["vibrance"] = vibrance
