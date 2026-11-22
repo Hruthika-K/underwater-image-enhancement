@@ -2,3 +2,7 @@ __pycache__/
 *.pyc
 data/
 results/
+results/*
+!results/final_test_267/
+results/final_test_267/*
+!results/final_test_267/run_final_test.py

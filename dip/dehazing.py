@@ -48,13 +48,18 @@ def guided_filter(guide, src, radius=30, eps=1e-3):  # edge-preserving smoothing
 
 
 def dehaze(img, method="udcp", patch=15, omega=0.95, t0=0.25, refine=True, return_t=False):
-    """Dehaze with DCP, UDCP, or a red-channel-aware prior."""
+    """Dehaze with DCP, UDCP, a red-channel-aware prior, or a simplified Red Channel Prior (rcp)."""
     f = img.astype(np.float32) / 255.0              # work in 0-1 floats
+    if method not in ("dcp", "udcp", "red", "rcp"):
+        raise ValueError("method must be 'dcp', 'udcp', 'red', or 'rcp'")
     channels = None if method == "dcp" else [0, 1]
-    if method not in ("dcp", "udcp", "red"):
-        raise ValueError("method must be 'dcp', 'udcp', or 'red'")
 
-    dark = dark_channel(f, patch, channels)         # dark channel of the observed image
+    if method == "rcp":
+        prior_img = f.copy()
+        prior_img[..., 2] = 1.0 - f[..., 2]         # invert red: lost red now looks like haze
+        dark = dark_channel(prior_img, patch, None) # min over (B, G, 1-R) in each patch
+    else:
+        dark = dark_channel(f, patch, channels)     # dark channel of the observed image
     a = estimate_atmospheric_light(f, dark)         # haze color A, one value per channel [B, G, R]
 
     normed = f / a
@@ -63,6 +68,10 @@ def dehaze(img, method="udcp", patch=15, omega=0.95, t0=0.25, refine=True, retur
             cv2.MORPH_RECT, (patch, patch)
         ))
         t = 1.0 - omega * red
+    elif method == "rcp":
+        a_prior = a.copy()
+        a_prior[2] = max(1.0 - a[2], 0.05)          # background light in the inverted-red space
+        t = 1.0 - omega * dark_channel(prior_img / a_prior, patch, None)
     else:
         t = 1.0 - omega * dark_channel(normed, patch, channels)
 
